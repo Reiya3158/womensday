@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Thanhdi thân mến</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #030825, #0a194f, #1b367d);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 850px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Hiệu ứng bầu trời sao và đom đóm */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ffd700, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: twinkle 4s infinite linear;
+            z-index: 1;
+        }
+
+        .ambient-effects {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ambient-item {
+            position: absolute;
+            bottom: -40px;
+            white-space: nowrap;
+            color: #ffb3c1;
+            text-shadow: 0 0 12px rgba(255, 117, 140, 0.8);
+            animation: ambient-float 7s linear forwards;
+        }
+
+        .ambient-message {
+            color: #ffe6eb;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        @keyframes ambient-float {
+            0% { transform: translateY(0) rotate(-8deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            85% { opacity: 0.7; }
+            100% { transform: translateY(-110vh) rotate(8deg); opacity: 0; }
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* Màn hình mở đầu (Nhấn giữ để mở) */
+        .welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 8, 37, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.8s ease;
+        }
+
+        .welcome-screen h2 {
+            font-size: 26px;
+            margin-bottom: 20px;
+            color: #ffccd5;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .pulse-btn {
+            position: relative;
+            overflow: hidden;
+            padding: 15px 35px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.6);
+            animation: pulse 1.5s infinite;
+            cursor: pointer;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .pulse-btn::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        .pulse-btn.holding::after {
+            animation: hold-progress 1.2s linear forwards;
+        }
+
+        @keyframes hold-progress {
+            to { transform: scaleX(1); }
+        }
+
+        .hold-hint {
+            margin-top: 18px;
+            color: #ffe6eb;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 117, 140, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 117, 140, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 117, 140, 0); }
+        }
+
+        /* Nội dung thiệp chính */
+        .main-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        .main-content.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #ffe6eb;
+            text-shadow: 0 0 15px rgba(255, 182, 193, 0.8);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 13px;
+            color: #a0c4ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Bông tulip */
+        .bouquet-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+
+        .tulip-bouquet {
+            display: block;
+            width: 136px;
+            height: 166px;
+            filter: drop-shadow(0 5px 8px rgba(255, 105, 180, 0.28));
+            animation: sway 3s ease-in-out infinite alternate;
+        }
+
+        .tulip-bouquet[hidden] {
+            display: none;
+        }
+
+        .tulip-bouquet.falling {
+            animation: flower-fall 1.5s ease-in forwards;
+        }
+
+        @keyframes flower-fall {
+            to { transform: translateY(260px) rotate(80deg); opacity: 0; }
+        }
+
+        @keyframes sway {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        .envelope-icon {
+            margin-top: 2px;
+            background: transparent;
+            color: #ffccd5;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .friend-note {
+            width: 92%;
+            padding: 15px 18px;
+            border: 1px solid rgba(255, 204, 213, 0.35);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffe6eb;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        }
+
+        .friend-note h2 {
+            margin-bottom: 7px;
+            color: #ffd0dc;
+            font-size: 16px;
+        }
+
+        .friend-note p {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .friend-note .note-hint {
+            margin-top: 8px;
+            color: #ffb3c1;
+            font-size: 11px;
+        }
+
+        .final-wish {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 50% 30%, rgba(255, 117, 140, 0.34), transparent 45%),
+                linear-gradient(160deg, #090d37, #32153f 58%, #702d57);
+            animation: wish-appear 1s ease both;
+        }
+
+        .final-wish[hidden] {
+            display: none;
+        }
+
+        @keyframes wish-appear {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .wish-card {
+            width: 100%;
+            padding: 28px 23px;
+            border: 1px solid rgba(255, 230, 235, 0.45);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .wish-card h2 {
+            margin-bottom: 20px;
+            color: #ffe6eb;
+            font-size: 25px;
+            text-shadow: 0 0 16px rgba(255, 117, 140, 0.6);
+        }
+
+        .wish-card p {
+            margin-bottom: 14px;
+            color: #fff4f6;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .wish-signature {
+            margin-top: 22px;
+            color: #ffd0dc;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .wish-replay {
+            margin-top: 22px;
+            padding: 10px 20px;
+            border: 0;
+            border-radius: 22px;
+            background: #ff8fa3;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Trái tim bay */
+        .heart {
+            position: absolute;
+            color: #ff758c;
+            font-size: 20px;
+            animation: flyUp 3s linear forwards;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-400px) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container" id="mainContainer">
+        <div class="stars"></div>
+        <div class="ambient-effects" id="ambientEffects" aria-hidden="true"></div>
+
+        <!-- Màn hình chào mừng -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h2>Gửi Thanhdi thân mến ❤️</h2>
+            <button class="pulse-btn" id="openGiftButton" type="button" aria-describedby="holdHint">
+                <span>Nhấn giữ để mở quà</span>
+            </button>
+            <p class="hold-hint" id="holdHint">Giữ nút trong giây lát để mở món quà ❤️</p>
+        </div>
+
+        <!-- Giao diện chính thiệp -->
+        <div class="main-content" id="mainContent">
+            <header>
+                <h1>Tặng Thanhdi<br>thân mến ❤️</h1>
+                <p class="quote">"Có bạn, những ngày bình thường cũng vui hơn"</p>
+            </header>
+
+            <!-- Một bông hoa rụng trước khi bức thư xuất hiện -->
+            <div class="bouquet-section">
+                <svg class="tulip-bouquet" id="tulipFlower" viewBox="0 0 220 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Một bông hoa tulip dành tặng Thanhdi">
+                    <defs>
+                        <linearGradient id="petal" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#ffd0dc"/>
+                            <stop offset="1" stop-color="#f05c83"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M110 222 Q110 168 110 103" fill="none" stroke="#397e50" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M109 184 Q68 145 62 161 Q75 187 109 195Z" fill="#4e9f68"/>
+                    <path d="M111 163 Q145 125 158 140 Q151 166 111 175Z" fill="#5cab70"/>
+                    <path d="M76 105 Q70 76 83 50 Q97 58 110 35 Q123 58 137 50 Q150 77 144 105 Q111 124 76 105Z" fill="url(#petal)" stroke="#e8587b" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M109 101 Q110 74 110 52" fill="none" stroke="#ffe7ed" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+                </svg>
+                <div class="envelope-icon">🌷 Một bông hoa dành riêng cho bạn</div>
+            </div>
+
+            <section class="friend-note" aria-label="Lời nhắn dành cho Thanhdi">
+                <h2>Một chút yêu thương dành cho Thanhdi 💌</h2>
+                <p>Ngắm hoa một chút nhé, rồi mình có điều muốn gửi bạn.</p>
+                <p class="note-hint">Sau 5 giây, hoa sẽ rụng và bức thư sẽ xuất hiện ❤️</p>
+            </section>
+        </div>
+
+        <div class="final-wish" id="finalWish" role="dialog" aria-modal="true" aria-labelledby="finalWishTitle" hidden>
+            <div class="wish-card">
+                <h2 id="finalWishTitle">Thanhdi ơi, đọc thư xong nhớ cười nha 😜</h2>
+                <p>Chúc mừng bạn đã kiên nhẫn ngắm hoa suốt 5 giây. Phần thưởng là bức thư này — ngân sách có hạn nên chưa kèm trà sữa đâu nha! 🧋</p>
+                <p>Nói đùa vậy thôi, mình thật sự rất quý bạn. Chúc bạn luôn vui vẻ, xinh tươi và gặp toàn chuyện tốt; chuyện deadline tự biết đường né bạn ra! ✨</p>
+                <p>Nếu hôm nào buồn thì cứ nhắn mình. Mình có thể chưa giải quyết được vấn đề, nhưng nghe bạn kể lể thì rất có kinh nghiệm 😄</p>
+                <p class="wish-signature">Bạn thân mến, nhớ cười thật nhiều nha! 💕</p>
+                <button class="wish-replay" id="wishReplay" type="button">Xem lại thiệp</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const openGiftButton = document.getElementById('openGiftButton');
+        let holdTimer;
+        let cardOpened = false;
+        const finalWish = document.getElementById('finalWish');
+        const tulipFlower = document.getElementById('tulipFlower');
+        const flowerFallDelay = 5000;
+        let flowerFallTimer;
+
+        function startHolding(event) {
+            if (cardOpened || openGiftButton.classList.contains('holding')) {
+                event.preventDefault();
+                return;
+            }
+            if (event.type === 'pointerdown' && event.button !== 0) {
+                return;
+            }
+
+            event.preventDefault();
+            clearTimeout(holdTimer);
+            openGiftButton.classList.add('holding');
+
+            if (event.pointerId !== undefined) {
+                openGiftButton.setPointerCapture(event.pointerId);
+            }
+
+            holdTimer = setTimeout(openCard, 1200);
+        }
+
+        function stopHolding() {
+            clearTimeout(holdTimer);
+            openGiftButton.classList.remove('holding');
+        }
+
+        openGiftButton.addEventListener('pointerdown', startHolding);
+        openGiftButton.addEventListener('pointerup', stopHolding);
+        openGiftButton.addEventListener('pointercancel', stopHolding);
+        openGiftButton.addEventListener('lostpointercapture', stopHolding);
+        openGiftButton.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                startHolding(event);
+            }
+        });
+        openGiftButton.addEventListener('keyup', (event) => {
+            if (event.key === ' ' || event.key === 'Enter') {
+                stopHolding();
+            }
+        });
+        window.addEventListener('blur', stopHolding);
+
+        function openCard() {
+            if (cardOpened) {
+                return;
+            }
+            cardOpened = true;
+            stopHolding();
+            document.getElementById('welcomeScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('mainContent').classList.add('active');
+                startFlowerSequence();
+            }, 500);
+            createHearts();
+        }
+
+        function startFlowerSequence() {
+            clearTimeout(flowerFallTimer);
+            tulipFlower.removeAttribute('hidden');
+            tulipFlower.classList.remove('falling');
+            finalWish.hidden = true;
+            flowerFallTimer = setTimeout(() => {
+                tulipFlower.classList.add('falling');
+            }, flowerFallDelay);
+        }
+
+        tulipFlower.addEventListener('animationend', (event) => {
+            if (event.animationName !== 'flower-fall') {
+                return;
+            }
+            tulipFlower.setAttribute('hidden', '');
+            finalWish.hidden = false;
+            document.getElementById('wishReplay').focus();
+            createHearts();
+        });
+
+        document.getElementById('wishReplay').addEventListener('click', startFlowerSequence);
+
+        function createHearts() {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart';
+                    heart.innerHTML = '❤️';
+                    heart.style.left = Math.random() * 80 + 10 + '%';
+                    heart.style.bottom = '20px';
+                    heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                    document.getElementById('mainContainer').appendChild(heart);
+
+                    setTimeout(() => {
+                        heart.remove();
+                    }, 3000);
+                }, i * 150);
+            }
+        }
+
+        function createAmbientEffect() {
+            const effect = document.createElement('span');
+            const showMessage = Math.random() > 0.5;
+            effect.className = showMessage ? 'ambient-item ambient-message' : 'ambient-item';
+            effect.textContent = showMessage ? 'Quý bạn' : '❤️';
+            effect.style.left = Math.random() * 85 + 5 + '%';
+            effect.style.fontSize = showMessage ? '14px' : (Math.random() * 12 + 18) + 'px';
+            document.getElementById('ambientEffects').appendChild(effect);
+            effect.addEventListener('animationend', () => effect.remove(), { once: true });
+        }
+
+        createAmbientEffect();
+        setInterval(createAmbientEffect, 900);
+    </script>
+</body>
+</html>
